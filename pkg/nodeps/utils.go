@@ -92,14 +92,14 @@ func IsCodespaces() bool {
 	if settings.GetBool("PRETEND_CODESPACES") {
 		return true
 	}
-	return IsLinux() && os.Getenv("CODESPACES") == "true"
+	return IsLinux() && settings.GetBool("CODESPACES")
 }
 
 // GetWSLDistro returns the WSL2 distro name if on Linux
 func GetWSLDistro() string {
 	wslDistro := ""
 	if IsLinux() {
-		wslDistro = os.Getenv("WSL_DISTRO_NAME")
+		wslDistro = settings.GetString("WSL_DISTRO_NAME")
 	}
 	return wslDistro
 }

@@ -109,5 +109,5 @@ func ParseBoolFlag(long string, short string) bool {
 // ColorsEnabled returns true if colored output is enabled
 // Implementation from https://no-color.org/
 func ColorsEnabled() bool {
-	return os.Getenv("NO_COLOR") == "" || os.Getenv("NO_COLOR") == "0"
+	return settings.GetString("NO_COLOR") == "" || settings.GetString("NO_COLOR") == "0"
 }
