@@ -280,7 +280,7 @@ func CopyGlobalDdevDir(t *testing.T) string {
 		ddevapp.StartMutagenDaemon()
 		t.Logf("started mutagen daemon '%s' with MUTAGEN_DATA_DIRECTORY='%s'", globalconfig.GetMutagenPath(), globalconfig.GetMutagenDataDirectory())
 		// Make sure that $MUTAGEN_DATA_DIRECTORY is set to the correct directory
-		require.Equal(t, os.Getenv("MUTAGEN_DATA_DIRECTORY"), globalconfig.GetMutagenDataDirectory())
+		require.Equal(t, settings.GetString("MUTAGEN_DATA_DIRECTORY"), globalconfig.GetMutagenDataDirectory())
 	}
 
 	return tmpXdgConfigHomeDir
@@ -310,7 +310,7 @@ func ResetGlobalDdevDir(t *testing.T, tmpXdgConfigHomeDir string) {
 		ddevapp.StartMutagenDaemon()
 		t.Logf("started mutagen daemon '%s' with MUTAGEN_DATA_DIRECTORY=%s", globalconfig.GetMutagenPath(), globalconfig.GetMutagenDataDirectory())
 		// Make sure that $MUTAGEN_DATA_DIRECTORY is set to the correct directory
-		require.Equal(t, os.Getenv("MUTAGEN_DATA_DIRECTORY"), globalconfig.GetMutagenDataDirectory())
+		require.Equal(t, settings.GetString("MUTAGEN_DATA_DIRECTORY"), globalconfig.GetMutagenDataDirectory())
 	}
 }
 
