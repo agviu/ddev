@@ -355,13 +355,9 @@ func (app *DdevApp) ReadConfig(includeOverrides bool) ([]string, error) {
 	if app.ConfigPath == "" {
 		app.ConfigPath = app.GetConfigPath("config.yaml")
 	}
-	// Load base .ddev/config.yaml - original config
-	err := app.LoadConfigYamlFile(app.ConfigPath)
-	if err != nil {
-		return []string{}, fmt.Errorf("unable to load config file %s: %v", app.ConfigPath, err)
-	}
 
 	configOverrides := []string{}
+	var err error
 	// Load config.*.y*ml after in glob order
 	if includeOverrides {
 		glob := filepath.Join(filepath.Dir(app.ConfigPath), "config.*.y*ml")
@@ -369,45 +365,35 @@ func (app *DdevApp) ReadConfig(includeOverrides bool) ([]string, error) {
 		if err != nil {
 			return []string{}, err
 		}
+	}
 
-		for _, item := range configOverrides {
-			err = app.mergeAdditionalConfigIntoApp(item)
+	allFiles := append([]string{app.ConfigPath}, configOverrides...)
 
-			if err != nil {
-				return []string{}, fmt.Errorf("unable to load config file %s: %v", item, err)
-			}
+	// Add Pre-Load Validation (Hook Checks)
+	for _, file := range allFiles {
+		source, err := os.ReadFile(file)
+		if err != nil {
+			return []string{}, fmt.Errorf("unable to read config file %s: %v", file, err)
+		}
+		err = validateHookYAML(source)
+		if err != nil {
+			return []string{}, fmt.Errorf("invalid configuration in %s: %v", file, err)
 		}
 	}
 
-	return append([]string{app.ConfigPath}, configOverrides...), nil
-}
-
-// LoadConfigYamlFile loads one config.yaml into app, overriding what might be there.
-func (app *DdevApp) LoadConfigYamlFile(filePath string) error {
-	source, err := os.ReadFile(filePath)
+	// Implement Single-Step Loading
+	err = settings.LoadProjectConfig(app.ConfigPath, configOverrides, app)
 	if err != nil {
-		return fmt.Errorf("could not find an active DDEV configuration at %s have you run 'ddev config'? %v", app.ConfigPath, err)
+		return []string{}, fmt.Errorf("unable to load config: %v", err)
 	}
 
-	// Validate extend command keys
-	err = validateHookYAML(source)
-	if err != nil {
-		return fmt.Errorf("invalid configuration in %s: %v", app.ConfigPath, err)
-	}
-
-	// ReadConfig config values from file.
-	err = settings.Unmarshal(app)
-	if err != nil {
-		return err
-	}
-
-	// Handle UploadDirs value which can take multiple types.
+	// Add Post-Load Validation (Upload Dirs)
 	err = app.validateUploadDirs()
 	if err != nil {
-		return err
+		return []string{}, err
 	}
 
-	return nil
+	return allFiles, nil
 }
 
 // WarnIfConfigReplace messages user about whether config is being replaced or created

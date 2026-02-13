@@ -1648,7 +1648,7 @@ func TestPkgConfigDatabaseDBVersion(t *testing.T) {
 		err = os.RemoveAll(configFile)
 		assert.NoError(err)
 		err = fileutil.AppendStringToFile(configFile, fmt.Sprintf("database:\n  type: %s\n  version: %s ", parts[0], parts[1]))
-		err = app.LoadConfigYamlFile(configFile)
+		_, err = app.ReadConfig(false)
 		assert.NoError(err)
 		assert.Equal(parts[0], app.Database.Type)
 		assert.Equal(parts[1], app.Database.Version)
